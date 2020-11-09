@@ -1,0 +1,17 @@
+dataset:
+  dataset_root: ${path:data}
+  train_transforms:
+    - name: ToTensor
+    - name: Normalize
+      args:
+        mean: [0.4914, 0.4822, 0.4465]
+        std: [0.2023, 0.1994, 0.2010]
+  inference_transforms:
+    - name: ToTensor
+    - name: Normalize
+      args:
+        mean: [0.4914, 0.4822, 0.4465]
+        std: [0.2023, 0.1994, 0.2010]
+misc:
+  batch_size: 32
+  num_workers: 8

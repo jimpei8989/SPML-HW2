@@ -4,12 +4,12 @@ from typing import Optional
 import numpy as np
 import torch
 from torch.nn import CrossEntropyLoss
-from torch.optim import Adam
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from modules.attacks import attack
 from modules.datasets import JointDataset
+from modules.models import build_optimizer
 from modules.recorder import Recorder
 from modules.utils import timer
 
@@ -19,11 +19,12 @@ def train(
     train_dataset,
     validation_dataset,
     attack_cfg=None,
+    optimizer_cfg=None,
     num_epochs=1,
     batch_size=1,
     num_workers=1,
-    lr=1e-3,
-    checkpoint_every_n_epochs=5,
+    checkpoint_period=5,
+    adversarial_examples_resample_period=5,
     recorder: Optional[Recorder] = None,
 ):
     to_train_dataloader = partial(
@@ -37,7 +38,11 @@ def train(
     benign_validation_dataloader = to_validation_dataloader(validation_dataset)
 
     criterion = CrossEntropyLoss()
-    optimizer = Adam(model.parameters(), lr=lr)
+
+    if train:
+        optimizer, (scheduler, step_type) = build_optimizer(
+            optimizer_cfg, model.parameters()
+        )
 
     @timer
     def run_epoch(dataloader, train=True, name="no-name"):
@@ -74,6 +79,12 @@ def train(
                 benign_accuracies.append(torch.masked_select(top1_acc, is_adv.eq(0)))
                 adv_accuracies.append(torch.masked_select(top1_acc, is_adv.eq(1)))
 
+                if train and scheduler and step_type == "batch":
+                    scheduler.step()
+
+        if train and scheduler and step_type == "epoch":
+            scheduler.step()
+
         benign_accuracies = torch.cat(benign_accuracies).tolist()
         adv_accuracies = torch.cat(adv_accuracies).tolist()
 
@@ -86,25 +97,28 @@ def train(
     for epoch in range(0, 1 + num_epochs):
         print(f"Epoch: {epoch:3d} / {num_epochs}")
 
+        attack_train_time, attack_validation_time = 0, 0
+
         # 1. Generate adversarial datasets for training and validation and mix the benign and
         # adversarial examples
-        attack_train_time, adv_train_dataset = attack(
-            model,
-            benign_train_dataloader,
-            name="pgd_train",
-            cfg=attack_cfg,
-        )
-        attack_validation_time, adv_validation_dataset = attack(
-            model,
-            benign_validation_dataloader,
-            name="pgd_validation",
-            cfg=attack_cfg,
-        )
+        if epoch % adversarial_examples_resample_period == 0:
+            attack_train_time, adv_train_dataset = attack(
+                model,
+                benign_train_dataloader,
+                name="pgd_train",
+                cfg=attack_cfg,
+            )
+            attack_validation_time, adv_validation_dataset = attack(
+                model,
+                benign_validation_dataloader,
+                name="pgd_validation",
+                cfg=attack_cfg,
+            )
 
-        joint_train_dataset = JointDataset(train_dataset, adv_train_dataset)
-        joint_validation_dataset = JointDataset(
-            validation_dataset, adv_validation_dataset
-        )
+            joint_train_dataset = JointDataset(train_dataset, adv_train_dataset)
+            joint_validation_dataset = JointDataset(
+                validation_dataset, adv_validation_dataset
+            )
 
         # 2.1 Run train on the joint dataset
         train_time, train_log = run_epoch(
@@ -141,7 +155,7 @@ def train(
             )
         )
 
-        if epoch > 0 and epoch % checkpoint_every_n_epochs == 0:
+        if epoch > 0 and epoch % checkpoint_period == 0:
             recorder.save_checkpoint(epoch, model, optimizer)
 
     recorder.finish_training(model)

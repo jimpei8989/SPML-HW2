@@ -40,6 +40,7 @@ def main():
             validation_dataset,
             recorder=recorder,
             attack_cfg=cfg.attack,
+            optimizer_cfg=cfg.optimizer,
             **cfg.misc,
         )
     elif cfg.task == "evaluate":

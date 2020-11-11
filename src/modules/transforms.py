@@ -13,7 +13,7 @@ class JpegCompression:
     def __call__(self, img: Image.Image) -> Image.Image:
         with BytesIO() as f:
             img.save(f, format="JPEG", quality=self._quality)
-            img = Image.open(f).convert("RGB")
+            img = Image.open(f).copy()
         return img
 
 

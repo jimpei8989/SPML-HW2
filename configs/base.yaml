@@ -19,5 +19,5 @@ attack:
 misc:
   batch_size: 1
   num_workers: 1
-  checkpoint_every_n_epochs: 5
-  lr: 0.0001
+  checkpoint_period: 100
+  adversarial_examples_resample_period: 100

@@ -3,9 +3,17 @@ model_name: resnet20
 attack:
   method: pgd
   num_iters: 10
+optimizer:
+  name: SGD
+  lr: 0.0005
+  scheduler:
+    name: CyclicLR
+    type: batch
+    base_lr: 0.00001
+    max_lr: 0.0005
 misc:
   num_epochs: 50
   batch_size: 128
   num_workers: 8
-  checkpoint_every_n_epochs: 5
-  lr: 0.00001
+  checkpoint_period: 5
+  adversarial_examples_resample_period: 5

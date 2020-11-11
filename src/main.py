@@ -15,10 +15,7 @@ from modules.evaluate import evaluate
 def main():
     cfg = get_config()
 
-    recorder = Recorder(cfg.recorder_root, cfg)
-
     model = build_model(cfg.model_name).cuda()
-
     train_transform, inference_transform = build_transform(cfg.dataset)
 
     train_dataset = CIFAR10(
@@ -36,11 +33,13 @@ def main():
     )
 
     if cfg.task == "train":
+        recorder = Recorder(cfg.recorder_root, cfg)
         train(
             model,
             train_dataset,
             validation_dataset,
             recorder=recorder,
+            attack_cfg=cfg.attack,
             **cfg.misc,
         )
     elif cfg.task == "evaluate":
@@ -64,7 +63,7 @@ def get_config():
 def parse_arguments():
     parser = ArgumentParser()
     parser.add_argument("task")
-    parser.add_argument("config", type=lambda p: Path(p).absolute())
+    parser.add_argument("--config", type=lambda p: Path(p).absolute())
     parser.add_argument(
         "--base_config", type=lambda p: Path(p), default="configs/base.yaml"
     )

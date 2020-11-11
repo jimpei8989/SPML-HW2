@@ -12,6 +12,12 @@ dataset:
       args:
         mean: [0.4914, 0.4822, 0.4465]
         std: [0.2023, 0.1994, 0.2010]
+attack:
+  method: pgd
+  num_iters: 1
+  epsilon: 0.03125
 misc:
-  batch_size: 32
-  num_workers: 8
+  batch_size: 1
+  num_workers: 1
+  checkpoint_every_n_epochs: 5
+  lr: 0.0001

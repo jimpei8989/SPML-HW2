@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 
 from omegaconf import OmegaConf
@@ -12,12 +13,13 @@ class Recorder:
         if not self.root_dir.is_dir():
             self.root_dir.mkdir()
 
-        self.cfg = cfg
+        OmegaConf.save(cfg, self.root_dir / "config.yaml")
 
-        OmegaConf.save(self.cfg, self.root_dir / "config.yaml")
+        self.training_log = []
 
-    def on_epoch_ends(self):
-        pass
+    def on_epoch_ends(self, **kwargs):
+        kwargs["epoch"] = len(self.training_log)
+        self.training_log.append(kwargs)
 
     def save_checkpoint(self, epoch, model=None, optimizer=None, lr_scheduler=None):
         checkpoint = {
@@ -27,3 +29,8 @@ class Recorder:
         }
 
         torch.save(checkpoint, self.root_dir / f"epoch_{epoch:03d}.pt")
+
+    def finish_training(self, model):
+        with open(self.root_dir / "training_log.json", "w") as f:
+            json.dump(self.training_log, f, indent=2)
+        torch.save(model.state_dict(), self.root_dir / "model_weights.pt")

@@ -1,1 +1,11 @@
+recorder-root: resnet20-adversarial-training
 model_name: resnet20
+attack:
+  method: pgd
+  num_iters: 10
+misc:
+  num_epochs: 50
+  batch_size: 128
+  num_workers: 8
+  checkpoint_every_n_epochs: 5
+  lr: 0.00001

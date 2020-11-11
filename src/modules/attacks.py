@@ -3,16 +3,30 @@ from torch.nn import CrossEntropyLoss
 from tqdm import tqdm
 
 from modules.datasets import AdversarialDataset
+from modules.utils import timer
 
 
-def pgd_attack(model, dataloader, name="", epsilon=0.03125, num_iters=1):
+@timer
+def attack(model, dataloader, name, cfg):
+    cfg = cfg.copy()
+    method = cfg.pop("method")
+    if method == "pgd":
+        return pgd_attack(model, dataloader, name, **cfg)
+    else:
+        raise NotImplementedError("The attack method has not completed yet")
+
+
+def pgd_attack(model, dataloader, name, num_iters=1, epsilon=0.03125, alpha=None):
+    if alpha is None:
+        alpha = epsilon
+
     adv_X, adv_Y = [], []
     criterion = CrossEntropyLoss()
 
     model.eval()
     for x, y in tqdm(
         dataloader,
-        desc=f"⚔ [{name[:10].center(10):10s}]",
+        desc=f"⚔ [{name[:12].center(12):10s}]",
         ncols=120,
         leave=False,
     ):
@@ -30,11 +44,11 @@ def pgd_attack(model, dataloader, name="", epsilon=0.03125, num_iters=1):
             grad = x.grad.detach().sign()
             x.requires_grad = False
 
-            x += epsilon * grad
+            x += alpha * grad
 
             x = torch.max(torch.min(x, upper_bound), lower_bound)
 
-        adv_X.append(x)
-        adv_Y.append(y)
+        adv_X.append(x.cpu())
+        adv_Y.append(y.cpu())
 
     return AdversarialDataset(torch.cat(adv_X), torch.cat(adv_Y))

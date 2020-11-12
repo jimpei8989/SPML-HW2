@@ -101,7 +101,9 @@ def train(
 
         # 1. Generate adversarial datasets for training and validation and mix the benign and
         # adversarial examples
-        if epoch % adversarial_examples_resample_period == 0:
+        if epoch == 0 or (
+            epoch != 1 and (epoch - 1) % adversarial_examples_resample_period == 0
+        ):
             attack_train_time, adv_train_dataset = attack(
                 model,
                 benign_train_dataloader,

@@ -17,12 +17,25 @@ class JpegCompression:
         return img
 
 
+class Shield:
+    def __init__(self, quality, block_size):
+        self._quality = quality
+        self._block_size = block_size
+
+    def __call__(self, img: Image.Image) -> Image.Image:
+        return
+
+
 def get_transform(transform):
     name, args = transform.get("name"), transform.get("args", {})
     if name == "JPEG":
         return JpegCompression(**args)
+    elif name == "Shield":
+        return Shield(**args)
     elif hasattr(T, name):
         return getattr(T, name)(**args)
+    else:
+        raise NotImplementedError("The transform is not implemented yet")
 
 
 def build_transform(cfg: Optional[Path]):

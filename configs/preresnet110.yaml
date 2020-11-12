@@ -1,4 +1,4 @@
-recorder-root: preresnet110-adversarial-training
+recorder_root: ${path:logs/preresnet110-adversarial-training}
 model_name: preresnet110
 attack:
   method: pgd
@@ -16,5 +16,5 @@ misc:
   num_epochs: 500
   batch_size: 128
   num_workers: 16
-  checkpoint_period: 10 
+  checkpoint_period: 10
   adversarial_examples_resample_period: 20

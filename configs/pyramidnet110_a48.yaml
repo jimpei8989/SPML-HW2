@@ -1,4 +1,4 @@
-recorder-root: pyramidnet110_a48-adversarial-training
+recorder_root: ${logs/pyramidnet110_a48-adversarial-training}
 model_name: pyramidnet110_a48
 attack:
   method: pgd

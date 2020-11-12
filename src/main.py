@@ -6,7 +6,7 @@ from omegaconf.omegaconf import OmegaConf
 from torchvision.datasets import CIFAR10
 
 from modules.recorder import Recorder
-from modules.models import build_model
+from modules.models import CIFAR10_Model
 from modules.transforms import build_transform
 from modules.train import train
 from modules.evaluate import evaluate
@@ -15,7 +15,7 @@ from modules.evaluate import evaluate
 def main():
     cfg = get_config()
 
-    model = build_model(cfg.model_name).cuda()
+    model = CIFAR10_Model(cfg.model_name).cuda()
     train_transform, inference_transform = build_transform(cfg.dataset)
 
     train_dataset = CIFAR10(

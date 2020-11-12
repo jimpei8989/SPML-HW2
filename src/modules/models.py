@@ -1,9 +1,21 @@
-import torch.optim
+from torch import nn, optim
 from pytorchcv.model_provider import get_model
 
+from modules.normalize import Normalize
 
-def build_model(name):
-    return get_model(name + "_cifar10", pretrained=True)
+
+cifar10_mean = [0.4914, 0.4822, 0.4465]
+cifar10_std = [0.2023, 0.1994, 0.2010]
+
+
+class CIFAR10_Model(nn.Module):
+    def __init__(self, name):
+        super().__init__()
+        self.model = get_model(name + "_cifar10", pretrained=True)
+        self.normalize = Normalize(mean=cifar10_mean, std=cifar10_std)
+
+    def forward(self, x):
+        return self.model(self.normalize(x))
 
 
 def build_optimizer(cfg, parameters):
@@ -12,8 +24,8 @@ def build_optimizer(cfg, parameters):
 
     scheduler_cfg = cfg.pop("scheduler") if "scheduler" in cfg else None
 
-    if hasattr(torch.optim, name):
-        optimizer = getattr(torch.optim, name)(parameters, **cfg)
+    if hasattr(optim, name):
+        optimizer = getattr(optim, name)(parameters, **cfg)
     else:
         raise NotImplementedError("Optimizer not implemented")
 
@@ -26,8 +38,8 @@ def build_scheduler(cfg, optimizer):
 
     step_type = cfg.pop("type")
 
-    if hasattr(torch.optim.lr_scheduler, name):
-        scheduler = getattr(torch.optim.lr_scheduler, name)(optimizer, **cfg)
+    if hasattr(optim.lr_scheduler, name):
+        scheduler = getattr(optim.lr_scheduler, name)(optimizer, **cfg)
     else:
         raise NotImplementedError("Scheduler not implemented")
 

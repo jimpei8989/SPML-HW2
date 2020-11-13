@@ -13,7 +13,9 @@ from modules.evaluate import evaluate
 def main():
     cfg = get_config()
 
-    model = CIFAR10_Model(cfg.model, load_weight=(cfg.task == "evaluation")).cuda()
+    model = CIFAR10_Model(
+        cfg.model, cfg.recorder_root, load_weight=(cfg.task == "evaluate")
+    ).cuda()
 
     if cfg.task == "train":
         recorder = Recorder(cfg.recorder_root, cfg)
@@ -29,7 +31,11 @@ def main():
 
     elif cfg.task == "evaluate":
         evaluation_time, _ = evaluate(
-            model, dataset_cfg=cfg.dataset, attack_cfg=cfg.attack, **cfg.misc
+            model,
+            dataset_cfg=cfg.dataset,
+            attack_cfg=cfg.attack,
+            output_dir=cfg.output_root,
+            **cfg.misc,
         )
         print(f"\nEvaluation finished. Time elapsed: {evaluation_time:.2f}s.")
 
@@ -37,11 +43,14 @@ def main():
 def get_config():
     args = parse_arguments()
 
-    default_recorder_root = Path("logs") / datetime.now().strftime(r"%m%d-%H%M")
-
     OmegaConf.register_resolver("path", lambda p: Path(p).absolute())
     return OmegaConf.merge(
-        OmegaConf.create({"recorder_root": f"${{path:{default_recorder_root}}}"}),
+        OmegaConf.create(
+            {
+                "recorder_root": f"${{path:logs/{args.name}}}",
+                "output_root": f"${{path:results/{args.name}}}",
+            }
+        ),
         OmegaConf.load(args.base_config),
         OmegaConf.load(args.attack_config if args.task == "attack" else args.evaluate_config),
         OmegaConf.load(args.config),
@@ -53,6 +62,7 @@ def parse_arguments():
     parser = ArgumentParser()
     parser.add_argument("task")
     parser.add_argument("--config", type=lambda p: Path(p).absolute())
+    parser.add_argument("--name", default=datetime.now().strftime(r"%m%d-%H%M"))
     parser.add_argument("--base_config", type=lambda p: Path(p), default="configs/base.yaml")
     parser.add_argument("--train_config", type=lambda p: Path(p), default="configs/pgd-at.yaml")
     parser.add_argument(

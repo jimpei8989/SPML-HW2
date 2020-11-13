@@ -34,6 +34,8 @@ class Recorder:
         torch.save(checkpoint, self.root_dir / f"epoch_{epoch:03d}.pt")
 
     def finish_training(self, model):
+        model.cpu()
+
         with open(self.root_dir / "training_log.json", "w") as f:
             json.dump(self.training_log, f, indent=2)
         torch.save(model.state_dict(), self.root_dir / "model_weights.pt")

@@ -1,4 +1,6 @@
+import json
 from functools import partial
+
 from torch.nn import CrossEntropyLoss
 from torch.utils.data import DataLoader
 
@@ -13,6 +15,7 @@ def evaluate(
     model,
     dataset_cfg=None,
     attack_cfg=None,
+    output_dir=None,
     batch_size=1,
     num_workers=1,
     **kwargs,
@@ -27,17 +30,19 @@ def evaluate(
         zip(build_dataset(dataset_cfg, defense=False), ("attack_train", "attack_validation")),
     )
 
-    adv_train_dataset.save_to_directory(attack_cfg.dataset_root / "train")
-    adv_validation_dataset.save_to_directory(attack_cfg.dataset_root / "validation")
+    adv_train_dataset.save_to_directory(output_dir / "train")
+    adv_validation_dataset.save_to_directory(output_dir / "validation")
 
     def_adv_train_dataset, def_adv_validation_dataset = build_adv_dataset(
-        attack_cfg.dataset_root, dataset_cfg, defense=True
+        output_dir, dataset_cfg, defense=True
     )
 
     print(f"Attacking time: {attack_train_time:.2f}s / {attack_validation_time:.2f}s")
 
     criterion = CrossEntropyLoss()
     run_epoch = partial(run_general_epoch, model=model, criterion=criterion, train=False)
+
+    output = []
 
     def run_eval(dataset, split, defense=False):
         elapsed_time, log = run_epoch(
@@ -49,7 +54,19 @@ def evaluate(
         )
         print("==> " + " - ".join(f"{k}: {log[k]:.4f}" for k in ["loss", "benign_acc", "adv_acc"]))
 
+        output.append(
+            {
+                "split": split,
+                "defense": defense,
+                "time": elapsed_time,
+                "log": log,
+            }
+        )
+
     run_eval(JointDataset(train_dataset, adv_train_dataset), "train", False)
     run_eval(JointDataset(validation_dataset, adv_validation_dataset), "validation", False)
     run_eval(JointDataset(def_train_dataset, def_adv_train_dataset), "train", True)
     run_eval(JointDataset(def_validation_dataset, def_adv_validation_dataset), "validation", True)
+
+    with open(output_dir / "output.json", "w") as f:
+        json.dump(output, f, indent=2)

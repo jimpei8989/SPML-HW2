@@ -10,14 +10,14 @@ cifar10_std = [0.2023, 0.1994, 0.2010]
 
 
 class CIFAR10_Model(nn.Module):
-    def __init__(self, cfg, load_weight):
+    def __init__(self, cfg, log_dir, load_weight=False):
         super().__init__()
         self.model = get_model(cfg.name + "_cifar10", pretrained=True)
 
-        if load_weight:
-            self.model.load(torch.load(cfg.weight_path))
-
         self.normalize = Normalize(mean=cifar10_mean, std=cifar10_std)
+
+        if load_weight:
+            self.load_state_dict(torch.load(log_dir / "model_weights.pt"))
 
     def forward(self, x):
         return self.model(self.normalize(x))

@@ -23,5 +23,6 @@ $ pip3 install -r requirements.txt
 
 ## Progress
 - [ ] Paper survey for at least three methods
-- [ ] [Adversarial Training](https://arxiv.org/abs/1706.06083)
-- [ ]
+- [x] [Adversarial Training](https://arxiv.org/abs/1706.06083)
+- [ ] Preprocessing-based defenses
+    - SHIELD

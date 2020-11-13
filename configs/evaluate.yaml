@@ -6,8 +6,5 @@ dataset:
     - name: ToTensor
 attack:
   method: pgd
-  num_iters: 80
+  num_iters: 1
   dataset_root: ${path:temp/}
-misc:
-  batch_size: 128
-  num_workers: 8

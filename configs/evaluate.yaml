@@ -1,0 +1,13 @@
+dataset:
+  defense_transforms:
+    - name: JPEG
+      args:
+        quality: 80
+    - name: ToTensor
+attack:
+  method: pgd
+  num_iters: 80
+  dataset_root: ${path:temp/}
+misc:
+  batch_size: 128
+  num_workers: 8

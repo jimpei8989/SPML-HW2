@@ -1,3 +1,4 @@
+import torch
 from torch import nn, optim
 from pytorchcv.model_provider import get_model
 
@@ -9,9 +10,13 @@ cifar10_std = [0.2023, 0.1994, 0.2010]
 
 
 class CIFAR10_Model(nn.Module):
-    def __init__(self, name):
+    def __init__(self, cfg, load_weight):
         super().__init__()
-        self.model = get_model(name + "_cifar10", pretrained=True)
+        self.model = get_model(cfg.name + "_cifar10", pretrained=True)
+
+        if load_weight:
+            self.model.load(torch.load(cfg.weight_path))
+
         self.normalize = Normalize(mean=cifar10_mean, std=cifar10_std)
 
     def forward(self, x):

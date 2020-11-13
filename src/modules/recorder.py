@@ -21,11 +21,14 @@ class Recorder:
         kwargs["epoch"] = len(self.training_log)
         self.training_log.append(kwargs)
 
-    def save_checkpoint(self, epoch, model=None, optimizer=None, lr_scheduler=None):
+    def save_checkpoint(
+        self, epoch, model=None, optimizer=None, lr_scheduler=None, scheduler_type=None
+    ):
         checkpoint = {
             "model_state_dict": model.state_dict() if not model else None,
             "optimizer_state_dict": optimizer.state_dict() if not model else None,
-            "lr_scheduler_state_dict": lr_scheduler.state_dict() if not model else None,
+            "scheduler_state_dict": lr_scheduler.state_dict() if not model else None,
+            "scheduler_type": scheduler_type,
         }
 
         torch.save(checkpoint, self.root_dir / f"epoch_{epoch:03d}.pt")

@@ -3,11 +3,9 @@ from datetime import datetime
 from pathlib import Path
 from omegaconf.omegaconf import OmegaConf
 
-from torchvision.datasets import CIFAR10
-
 from modules.recorder import Recorder
 from modules.models import CIFAR10_Model
-from modules.transforms import build_transform
+
 from modules.train import train
 from modules.evaluate import evaluate
 
@@ -15,36 +13,25 @@ from modules.evaluate import evaluate
 def main():
     cfg = get_config()
 
-    model = CIFAR10_Model(cfg.model_name).cuda()
-    train_transform, inference_transform = build_transform(cfg.dataset)
-
-    train_dataset = CIFAR10(
-        root=cfg.dataset.dataset_root,
-        train=True,
-        transform=train_transform,
-        download=True,
-    )
-
-    validation_dataset = CIFAR10(
-        root=cfg.dataset.dataset_root,
-        train=False,
-        transform=inference_transform,
-        download=True,
-    )
+    model = CIFAR10_Model(cfg.model, load_weight=(cfg.task == "evaluation")).cuda()
 
     if cfg.task == "train":
         recorder = Recorder(cfg.recorder_root, cfg)
-        train(
+        train_time, _ = train(
             model,
-            train_dataset,
-            validation_dataset,
-            recorder=recorder,
+            dataset_cfg=cfg.dataset,
             attack_cfg=cfg.attack,
             optimizer_cfg=cfg.optimizer,
+            recorder=recorder,
             **cfg.misc,
         )
+        print(f"\nAdversarial training finished. Time elapsed: {train_time:.2f}s.")
+
     elif cfg.task == "evaluate":
-        evaluate(model, validation_dataset)
+        evaluation_time, _ = evaluate(
+            model, dataset_cfg=cfg.dataset, attack_cfg=cfg.attack, **cfg.misc
+        )
+        print(f"\nEvaluation finished. Time elapsed: {evaluation_time:.2f}s.")
 
 
 def get_config():
@@ -56,6 +43,7 @@ def get_config():
     return OmegaConf.merge(
         OmegaConf.create({"recorder_root": f"${{path:{default_recorder_root}}}"}),
         OmegaConf.load(args.base_config),
+        OmegaConf.load(args.attack_config if args.task == "attack" else args.evaluate_config),
         OmegaConf.load(args.config),
         OmegaConf.create({"task": args.task}),
     )
@@ -65,8 +53,10 @@ def parse_arguments():
     parser = ArgumentParser()
     parser.add_argument("task")
     parser.add_argument("--config", type=lambda p: Path(p).absolute())
+    parser.add_argument("--base_config", type=lambda p: Path(p), default="configs/base.yaml")
+    parser.add_argument("--train_config", type=lambda p: Path(p), default="configs/pgd-at.yaml")
     parser.add_argument(
-        "--base_config", type=lambda p: Path(p), default="configs/base.yaml"
+        "--evaluate_config", type=lambda p: Path(p), default="configs/evaluate.yaml"
     )
     return parser.parse_args()
 

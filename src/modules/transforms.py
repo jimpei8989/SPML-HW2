@@ -38,11 +38,8 @@ def get_transform(transform):
         raise NotImplementedError("The transform is not implemented yet")
 
 
-def build_transform(cfg: Optional[Path]):
-    if not cfg:
-        return None, None
+def build_transform(cfg: Optional[Path], defense=False):
+    if not defense:
+        return T.Compose(list(map(get_transform, cfg.transforms)))
     else:
-        return (
-            T.Compose(list(map(get_transform, cfg.train_transforms))),
-            T.Compose(list(map(get_transform, cfg.inference_transforms))),
-        )
+        return T.Compose(list(map(get_transform, cfg.defense_transforms)))

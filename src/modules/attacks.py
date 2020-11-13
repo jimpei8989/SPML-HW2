@@ -16,7 +16,7 @@ def attack(model, dataloader, name, cfg):
         raise NotImplementedError("The attack method has not completed yet")
 
 
-def pgd_attack(model, dataloader, name, num_iters=1, epsilon=0.03125, alpha=None):
+def pgd_attack(model, dataloader, name, num_iters=1, epsilon=0.03125, alpha=None, **kwargs):
     if alpha is None:
         alpha = epsilon
 

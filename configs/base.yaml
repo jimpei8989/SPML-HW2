@@ -1,8 +1,8 @@
 dataset:
   dataset_root: ${path:data}
-  train_transforms:
+  transforms:
     - name: ToTensor
-  inference_transforms:
+  defense_transforms:
     - name: ToTensor
 attack:
   method: pgd

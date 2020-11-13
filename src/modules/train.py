@@ -4,7 +4,7 @@ from typing import Optional
 from torch.nn import CrossEntropyLoss
 from torch.utils.data import DataLoader
 
-from modules.attacks import attack
+from modules.attacks import Attacker
 from modules.run_epoch import run_general_epoch
 from modules.datasets import JointDataset, build_dataset
 from modules.models import build_optimizer
@@ -36,6 +36,8 @@ def train(
 
     optimizer, (scheduler, scheduler_type) = build_optimizer(optimizer_cfg, model.parameters())
 
+    attacker = Attacker(attack_cfg)
+
     run_epoch = partial(
         run_general_epoch,
         model=model,
@@ -53,17 +55,19 @@ def train(
         # 1. Generate adversarial datasets for training and validation and mix the benign and
         # adversarial examples
         if epoch == 0 or (epoch != 1 and (epoch - 1) % adversarial_examples_resample_period == 0):
-            attack_train_time, adv_train_dataset = attack(
+            num_iters = attacker.request_num_iters()
+
+            attack_train_time, adv_train_dataset = attacker.attack(
                 model,
                 train_dataloader,
+                num_iters=num_iters,
                 name="pgd_train",
-                cfg=attack_cfg,
             )
-            attack_validation_time, adv_validation_dataset = attack(
+            attack_validation_time, adv_validation_dataset = attacker.attack(
                 model,
                 validation_dataloader,
+                num_iters=num_iters,
                 name="pgd_validation",
-                cfg=attack_cfg,
             )
 
             adv_train_dataset.save_to_directory(

@@ -6,7 +6,9 @@ dataset:
     - name: ToTensor
 attack:
   method: pgd
-  num_iters: 1
+  type: fixed
+  args:
+    num_iters: 1
   epsilon: 0.03125
 misc:
   batch_size: 1

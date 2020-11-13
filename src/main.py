@@ -1,7 +1,12 @@
+import random
 from argparse import ArgumentParser
 from datetime import datetime
 from pathlib import Path
+
 from omegaconf.omegaconf import OmegaConf
+
+import numpy as np
+import torch
 
 from modules.recorder import Recorder
 from modules.models import CIFAR10_Model
@@ -9,8 +14,18 @@ from modules.models import CIFAR10_Model
 from modules.train import train
 from modules.evaluate import evaluate
 
+SEED = 0x06902029
+
+
+def seed_everything(weed):
+    random.seed(weed)
+    np.random.seed(weed)
+    torch.manual_seed(weed)
+
 
 def main():
+    seed_everything(SEED)
+
     cfg = get_config()
 
     model = CIFAR10_Model(
@@ -52,7 +67,7 @@ def get_config():
             }
         ),
         OmegaConf.load(args.base_config),
-        OmegaConf.load(args.attack_config if args.task == "attack" else args.evaluate_config),
+        OmegaConf.load(args.attack_config if args.task == "train" else args.evaluate_config),
         OmegaConf.load(args.config),
         OmegaConf.create({"task": args.task}),
     )
@@ -64,7 +79,7 @@ def parse_arguments():
     parser.add_argument("--config", type=lambda p: Path(p).absolute())
     parser.add_argument("--name", default=datetime.now().strftime(r"%m%d-%H%M"))
     parser.add_argument("--base_config", type=lambda p: Path(p), default="configs/base.yaml")
-    parser.add_argument("--train_config", type=lambda p: Path(p), default="configs/pgd-at.yaml")
+    parser.add_argument("--attack_config", type=lambda p: Path(p), default="configs/pgd-AT.yaml")
     parser.add_argument(
         "--evaluate_config", type=lambda p: Path(p), default="configs/evaluate.yaml"
     )

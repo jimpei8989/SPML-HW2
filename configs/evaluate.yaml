@@ -6,5 +6,6 @@ dataset:
     - name: ToTensor
 attack:
   method: pgd
-  num_iters: 1
-  dataset_root: ${path:temp/}
+  type: fixed
+  args:
+    num_iters: 80

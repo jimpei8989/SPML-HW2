@@ -1,3 +1,0 @@
-attack:
-  method: pgd
-  num_iters: 16

@@ -4,7 +4,7 @@ from functools import partial
 from torch.nn import CrossEntropyLoss
 from torch.utils.data import DataLoader
 
-from modules.attacks import attack
+from modules.attacks import Attacker
 from modules.datasets import JointDataset, build_dataset, build_adv_dataset
 from modules.run_epoch import run_general_epoch
 from modules.utils import timer
@@ -25,8 +25,11 @@ def evaluate(
     train_dataset, validation_dataset = build_dataset(dataset_cfg, defense=False)
     def_train_dataset, def_validation_dataset = build_dataset(dataset_cfg, defense=True)
 
+    attacker = Attacker(attack_cfg)
+    num_iters = attacker.request_num_iters()
+
     (attack_train_time, adv_train_dataset), (attack_validation_time, adv_validation_dataset) = map(
-        lambda p: attack(model, to_dataloader(p[0]), name=p[1], cfg=attack_cfg),
+        lambda p: attacker.attack(model, to_dataloader(p[0]), num_iters=num_iters, name=p[1]),
         zip(build_dataset(dataset_cfg, defense=False), ("attack_train", "attack_validation")),
     )
 

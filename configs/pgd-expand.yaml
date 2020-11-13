@@ -1,0 +1,9 @@
+attack:
+  method: pgd
+  type: expand
+  args:
+    num_iters_list:
+      - [4, 4]
+      - [8, 4]
+      - [16, 4]
+      - [32, 4]

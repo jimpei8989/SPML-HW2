@@ -73,7 +73,9 @@ class Attacker:
                 repeat(cfg.iters.args[-1][0]),
             )
         elif cfg.iters.type == "random":
-            self.num_iters_generator = RandomChooseIterable(cfg.args.iters.args)
+            self.num_iters_generator = RandomChooseIterable(cfg.iters.args)
+        else:
+            raise NotImplementedError
 
         self.attack_func = partial(attack_func_mapping[cfg.method], **cfg.args)
 
@@ -83,3 +85,4 @@ class Attacker:
     @timer
     def attack(self, model, dataloader, num_iters, **kwargs):
         return self.attack_func(model, dataloader, num_iters=num_iters, **kwargs)
+

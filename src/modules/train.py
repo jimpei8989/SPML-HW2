@@ -12,6 +12,40 @@ from modules.recorder import Recorder
 from modules.utils import timer
 
 
+def get_attack_epochs(cfg, max_epoch):
+    epochs = [0]
+
+    if cfg.type == "fixed":
+        epochs += list(range(cfg.args + 1, max_epoch + 1, cfg.args))
+    elif cfg.type == "absolute":
+        epochs += cfg.args
+    elif cfg.type == "relative":
+        cur_epoch = 1
+        iter_seq = iter(cfg.args)
+        while True:
+            try:
+                cur_epoch += next(iter_seq)
+            except StopIteration:
+                cur_epoch += cfg.args[-1]
+            if cur_epoch > max_epoch:
+                break
+            epochs.append(cur_epoch)
+    elif cfg.type == "expand":
+        cur_epoch = 1
+        iter_seq = iter(sum(([r] * n for r, n in cfg.args), []))
+        while True:
+            try:
+                cur_epoch += next(iter_seq)
+            except StopIteration:
+                cur_epoch += cfg.args[-1][0]
+            if cur_epoch > max_epoch:
+                break
+            epochs.append(cur_epoch)
+    else:
+        raise NotImplementedError()
+    return set(epochs)
+
+
 @timer
 def train(
     model,
@@ -23,7 +57,6 @@ def train(
     batch_size=1,
     num_workers=1,
     checkpoint_period=10,
-    adversarial_examples_resample_period=10,
     **kwargs,
 ):
     to_dataloader = partial(DataLoader, batch_size=batch_size, num_workers=num_workers)
@@ -37,6 +70,7 @@ def train(
     optimizer, (scheduler, scheduler_type) = build_optimizer(optimizer_cfg, model.parameters())
 
     attacker = Attacker(attack_cfg)
+    attack_epochs = get_attack_epochs(attack_cfg.freq, num_epochs)
 
     run_epoch = partial(
         run_general_epoch,
@@ -48,25 +82,27 @@ def train(
     )
 
     for epoch in range(0, 1 + num_epochs):
-        print(f"Epoch: {epoch:3d} / {num_epochs}")
+        attack_num_iters = attacker.request_num_iters() if epoch in attack_epochs else None
+        print(
+            f"Epoch: {epoch:3d} / {num_epochs}"
+            + (f" (️⚔ {attack_num_iters})" if attack_num_iters else "")
+        )
 
         attack_train_time, attack_validation_time = 0, 0
 
         # 1. Generate adversarial datasets for training and validation and mix the benign and
         # adversarial examples
-        if epoch == 0 or (epoch != 1 and (epoch - 1) % adversarial_examples_resample_period == 0):
-            num_iters = attacker.request_num_iters()
-
+        if attack_num_iters:
             attack_train_time, adv_train_dataset = attacker.attack(
                 model,
                 train_dataloader,
-                num_iters=num_iters,
+                num_iters=attack_num_iters,
                 name="pgd_train",
             )
             attack_validation_time, adv_validation_dataset = attacker.attack(
                 model,
                 validation_dataloader,
-                num_iters=num_iters,
+                num_iters=attack_num_iters,
                 name="pgd_validation",
             )
 

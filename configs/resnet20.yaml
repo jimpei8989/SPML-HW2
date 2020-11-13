@@ -8,9 +8,16 @@ optimizer:
     type: batch
     base_lr: 0.00001
     max_lr: 0.0005
+attack:
+  freq:
+    type: expand
+    args:
+      - [16, 4]
+      - [8, 4]
+      - [4, 8]
+      - [2, 32]
 misc:
   num_epochs: 256
   batch_size: 128
   num_workers: 8
   checkpoint_period: 8
-  adversarial_examples_resample_period: 16

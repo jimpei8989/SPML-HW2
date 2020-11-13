@@ -1,6 +1,6 @@
 import random
 from functools import partial
-from itertools import cycle, repeat
+from itertools import repeat, chain
 
 import torch
 from torch.nn import CrossEntropyLoss
@@ -28,7 +28,7 @@ def pgd_attack(model, dataloader, name, num_iters=1, epsilon=0.03125, alpha=None
     model.eval()
     for x, y in tqdm(
         dataloader,
-        desc=f"⚔ [{name[:12].center(12):10s} * {num_iters}]",
+        desc=f"⚔ [{name[:12].center(12):10s}]",
         ncols=120,
         leave=False,
     ):
@@ -63,21 +63,19 @@ attack_func_mapping = {
 
 class Attacker:
     def __init__(self, cfg):
-        method = cfg.pop("method")
-
-        iter_type = cfg.pop("type")
-        if iter_type == "fixed":
-            self.num_iters_generator = repeat(cfg.args.num_iters)
-        elif iter_type == "cycle":
-            self.num_iters_generator = cycle(cfg.args.num_iters_list)
-        elif iter_type == "expand":
-            self.num_iters_generator = cycle(
-                sum(([r] * n for r, n in cfg.args.num_iters_list), start=[])
+        if cfg.iters.type == "fixed":
+            self.num_iters_generator = repeat(cfg.iters.args)
+        elif cfg.iters.type == "sequence":
+            self.num_iters_generator = chain(iter(cfg.iters.args), repeat(cfg.iters.args[-1]))
+        elif cfg.iters.type == "expand":
+            self.num_iters_generator = chain(
+                iter(sum(([r] * n for r, n in cfg.iters.args), start=[])),
+                repeat(cfg.iters.args[-1][0]),
             )
-        elif iter_type == "random":
-            self.num_iters_generator = RandomChooseIterable(cfg.args.num_iters_list)
+        elif cfg.iters.type == "random":
+            self.num_iters_generator = RandomChooseIterable(cfg.args.iters.args)
 
-        self.attack_func = partial(attack_func_mapping[method], **cfg)
+        self.attack_func = partial(attack_func_mapping[cfg.method], **cfg.args)
 
     def request_num_iters(self):
         return next(self.num_iters_generator)

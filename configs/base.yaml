@@ -6,12 +6,16 @@ dataset:
     - name: ToTensor
 attack:
   method: pgd
-  type: fixed
   args:
-    num_iters: 1
-  epsilon: 0.03125
+    epsilon: 0.03125
+  iters:
+    type: fixed
+    args: 1
+  freq:
+    type: fixed
+    args: 1
+
 misc:
   batch_size: 1
   num_workers: 1
   checkpoint_period: 100
-  adversarial_examples_resample_period: 100

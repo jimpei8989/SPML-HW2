@@ -10,8 +10,7 @@ class Recorder:
     def __init__(self, root_dir: Path, cfg) -> None:
         self.root_dir = root_dir
 
-        if not self.root_dir.is_dir():
-            self.root_dir.mkdir()
+        self.root_dir.mkdir(parents=True, exist_ok=True)
 
         OmegaConf.save(cfg, self.root_dir / "config.yaml")
 

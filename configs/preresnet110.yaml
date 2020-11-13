@@ -1,9 +1,5 @@
-recorder_root: ${path:logs/preresnet110-adversarial-training}
-model_name: preresnet110
-attack:
-  method: pgd
-  num_iters: 10
-  alpha: 0.015625
+model:
+  name: preresnet110
 optimizer:
   name: SGD
   lr: 0.0005
@@ -13,8 +9,8 @@ optimizer:
     base_lr: 0.00001
     max_lr: 0.0005
 misc:
-  num_epochs: 500
+  num_epochs: 256
   batch_size: 128
   num_workers: 16
-  checkpoint_period: 10
-  adversarial_examples_resample_period: 20
+  checkpoint_period: 8
+  adversarial_examples_resample_period: 16

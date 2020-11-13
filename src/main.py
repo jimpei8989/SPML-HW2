@@ -1,6 +1,6 @@
 import random
 from argparse import ArgumentParser
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
 from omegaconf.omegaconf import OmegaConf
@@ -23,6 +23,10 @@ def seed_everything(weed):
     torch.manual_seed(weed)
 
 
+def sec_to_readable(seconds):
+    return str(timedelta(seconds=int(seconds)))
+
+
 def main():
     seed_everything(SEED)
 
@@ -42,7 +46,7 @@ def main():
             recorder=recorder,
             **cfg.misc,
         )
-        print(f"\nAdversarial training finished. Time elapsed: {train_time:.2f}s.")
+        print(f"\nAdversarial training finished. Time elapsed: {sec_to_readable(train_time)}.")
 
     elif cfg.task == "evaluate":
         evaluation_time, _ = evaluate(
@@ -52,7 +56,7 @@ def main():
             output_dir=cfg.output_root,
             **cfg.misc,
         )
-        print(f"\nEvaluation finished. Time elapsed: {evaluation_time:.2f}s.")
+        print(f"\nEvaluation finished. Time elapsed: {sec_to_readable(evaluation_time)}.")
 
 
 def get_config():

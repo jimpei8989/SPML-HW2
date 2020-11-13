@@ -13,9 +13,10 @@ attack:
     type: expand
     args:
       - [16, 4]
-      - [8, 4]
-      - [4, 8]
-      - [2, 32]
+      - [10, 6]
+      - [8, 8]
+      - [6, 10]
+      - [4, 16]
 misc:
   num_epochs: 256
   batch_size: 128

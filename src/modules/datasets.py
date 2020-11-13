@@ -46,8 +46,8 @@ class AdversarialDataset(Dataset):
 class JointDataset(Dataset):
     def __init__(self, dataset_a, dataset_b):
         super().__init__()
-        self.dataset_a = dataset_a
-        self.dataset_b = dataset_b
+        self.dataset_a = dataset_a if dataset_a else []
+        self.dataset_b = dataset_b if dataset_b else []
 
     def __getitem__(self, index):
         return (

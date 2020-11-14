@@ -12,7 +12,7 @@ cifar10_std = [0.2023, 0.1994, 0.2010]
 class CIFAR10_Model(nn.Module):
     def __init__(self, cfg, log_dir, load_weight=False):
         super().__init__()
-        self.model = get_model(cfg.name + "_cifar10", pretrained=True)
+        self.model = get_model(cfg.name + "_cifar10", pretrained=cfg.pretrained)
 
         self.normalize = Normalize(mean=cifar10_mean, std=cifar10_std)
 

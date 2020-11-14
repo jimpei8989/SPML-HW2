@@ -115,7 +115,7 @@ def train(
             # )
 
             joint_train_dataloader = to_dataloader(
-                JointDataset(train_dataset, adv_train_dataset), shuffle=True
+                JointDataset(None, adv_train_dataset), shuffle=True
             )
             joint_validation_dataloader = to_dataloader(
                 JointDataset(validation_dataset, adv_validation_dataset)

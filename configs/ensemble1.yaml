@@ -1,5 +1,11 @@
 model:
-  name: resnet20
+  name: Ensemble
+  models:
+    - nin
+    - resnet20
+    - sepreresnet56
+    - densenet40_k12_bc
+    - diaresnet110
   num_epochs: 256
 optimizer:
   name: SGD
@@ -19,6 +25,6 @@ attack:
       - [4, 8]
       - [2, 16]
 misc:
-  batch_size: 128
+  batch_size: 32
   num_workers: 8
   checkpoint_period: 8

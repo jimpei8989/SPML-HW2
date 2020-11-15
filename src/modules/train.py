@@ -22,7 +22,6 @@ def train(
     attack_cfg=None,
     optimizer_cfg=None,
     recorder: Optional[Recorder] = None,
-    num_epochs=1,
     batch_size=1,
     num_workers=1,
     checkpoint_period=16,
@@ -50,26 +49,29 @@ def train(
     )
 
     attacker = Attacker(attack_cfg)
-    attack_epochs = get_attack_epochs(attack_cfg.freq, num_epochs)
+    attack_epochs = get_attack_epochs(attack_cfg.freq, model.num_epochs)
 
     for epoch in range(1, 1 + model.num_epochs):
         attack_num_iters = attacker.request_num_iters() if epoch in attack_epochs else None
+        attack_name = model.get_single_model() if attack_num_iters else None
+
         print(
-            f"Epoch: {epoch:3d} / {num_epochs}"
-            + (f" (️⚔ {attack_num_iters})" if attack_num_iters else "")
+            f"Epoch: {epoch:3d} / {model.num_epochs}"
+            + (f" (️⚔ {attack_num_iters} on {attack_name})" if attack_num_iters else "")
         )
 
         # 1. Generate adversarial datasets for training and validation and mix the benign and
         # adversarial examples
         if attack_num_iters:
+            attack_model = getattr(model, attack_name)
             attack_train_time, adv_train_dataset = attacker.attack(
-                model,
+                attack_model,
                 train_dataloader,
                 num_iters=attack_num_iters,
                 name="attack train",
             )
             attack_validation_time, adv_validation_dataset = attacker.attack(
-                model,
+                attack_model,
                 validation_dataloader,
                 num_iters=attack_num_iters,
                 name="attack validation",

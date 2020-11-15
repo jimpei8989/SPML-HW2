@@ -54,11 +54,13 @@ def main():
                 **cfg.misc,
             )
             print(
-                f"\nAdversarial examples generation finished. Time elapsed: {sec_to_readable(adv_gen_time)}."
+                "\nAdversarial examples generation finished."
+                + f"Time elapsed: {sec_to_readable(adv_gen_time)}."
             )
 
         evaluation_time, _ = evaluate(
             model_cfg=cfg.model,
+            weight_path=args.weight_path,
             dataset_cfg=cfg.dataset,
             adv_images_dir=cfg.eval.adv_images_dir,
             output_dir=cfg.output_root,

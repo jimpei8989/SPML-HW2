@@ -3,19 +3,22 @@ dataset:
   transforms:
     - name: ToTensor
   defense_transforms:
+    - name: Shield
+      args:
+        block_size: 4
     - name: ToTensor
 attack:
   method: pgd
   args:
+    alpha: 0.015625
     epsilon: 0.03125
   iters:
     type: fixed
-    args: 1
+    args: 8
   freq:
     type: fixed
-    args: 1
-
+    args: 8
 misc:
-  batch_size: 1
-  num_workers: 1
-  checkpoint_period: 100
+  batch_size: 128
+  num_workers: 8
+  checkpoint_period: 10

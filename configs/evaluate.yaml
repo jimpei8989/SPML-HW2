@@ -1,11 +1,15 @@
-dataset:
-  defense_transforms:
-    - name: JPEG
-      args:
-        quality: 80
-    - name: ToTensor
+eval:
+  adv_images_dir: ${path:adv_images/adv_images-8/}
+  model:
+    name: Ensemble
+    models:
+      - nin
+      - resnet20
+      - sepreresnet56
+      - densenet40_k12_bc
+      - diaresnet110
 attack:
   method: pgd
-  type: fixed
-  args:
-    num_iters: 80
+  iters:
+    type: fixed
+    args: 8

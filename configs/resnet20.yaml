@@ -1,6 +1,7 @@
 model:
   name: resnet20
-  pretrained: False
+  pretrained: True
+  num_epochs: 256
 optimizer:
   name: SGD
   lr: 0.0005
@@ -19,7 +20,6 @@ attack:
       - [4, 8]
       - [2, 16]
 misc:
-  num_epochs: 256
   batch_size: 128
   num_workers: 8
   checkpoint_period: 8

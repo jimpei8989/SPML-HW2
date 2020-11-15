@@ -7,12 +7,12 @@ import torch
 
 
 class Recorder:
-    def __init__(self, root_dir: Path, cfg) -> None:
+    def __init__(self, root_dir: Path, root_cfg) -> None:
         self.root_dir = root_dir
 
         self.root_dir.mkdir(parents=True, exist_ok=True)
 
-        OmegaConf.save(cfg, self.root_dir / "config.yaml")
+        OmegaConf.save(root_cfg, self.root_dir / "config.yaml")
 
         self.attacking_log = []
         self.training_log = []
@@ -44,8 +44,3 @@ class Recorder:
 
         with open(self.root_dir / "attacking_log.json", "w") as f:
             json.dump(self.attacking_log, f, indent=2)
-
-    def finish_training(self, model):
-        model.cpu()
-
-        torch.save(model.state_dict(), self.root_dir / "model_weights.pt")

@@ -4,54 +4,20 @@ from typing import Optional
 from torch.nn import CrossEntropyLoss
 from torch.utils.data import DataLoader
 
-from modules.attacks import Attacker
-from modules.run_epoch import run_general_epoch
-from modules.datasets import JointDataset, build_dataset
-from modules.models import build_optimizer
-from modules.recorder import Recorder
-from modules.utils import timer
+from .models import CIFAR10_Model, build_optimizer
 
+from .attacks import Attacker
+from .run_epoch import run_general_epoch
+from .datasets import JointDataset, build_dataset
+from .recorder import Recorder
+from .utils import timer
 
-def get_attack_epochs(cfg, max_epoch):
-    if cfg.type == "fixed":
-        epochs = list(range(1, max_epoch + 1, cfg.args))
-    elif cfg.type == "absolute":
-        epochs = cfg.args
-    elif cfg.type == "relative":
-        epochs, cur_epoch = [], 1
-        iter_seq = iter(cfg.args)
-
-        while cur_epoch <= max_epoch:
-            epochs.append(cur_epoch)
-            try:
-                cur_epoch += next(iter_seq)
-            except StopIteration:
-                cur_epoch += cfg.args[-1]
-    elif cfg.type == "expand":
-        epochs, cur_epoch = [], 1
-        iter_seq = iter(sum(([r] * n for r, n in cfg.args), []))
-
-        while cur_epoch <= max_epoch:
-            epochs.append(cur_epoch)
-            try:
-                cur_epoch += next(iter_seq)
-            except StopIteration:
-                cur_epoch += cfg.args[-1][0]
-    else:
-        raise NotImplementedError()
-    return set(epochs)
-
-
-def print_verbose(desc, time, log, is_eval=False):
-    print(
-        f"{'⚔' if is_eval else '⚘'} {desc[:16].center(16):16s} [{time:6.2f}s] ~ "
-        + " - ".join(f"{k}: {log[k]:.4f}" for k in ["loss", "benign_acc", "adv_acc"])
-    )
+from .train_utils import get_attack_epochs, print_verbose
 
 
 @timer
 def train(
-    model,
+    model_cfg=None,
     dataset_cfg=None,
     attack_cfg=None,
     optimizer_cfg=None,
@@ -59,22 +25,21 @@ def train(
     num_epochs=1,
     batch_size=1,
     num_workers=1,
-    checkpoint_period=10,
+    checkpoint_period=16,
     **kwargs,
 ):
+    model = CIFAR10_Model(model_cfg).cuda()
+
+    # Datasets
     to_dataloader = partial(DataLoader, batch_size=batch_size, num_workers=num_workers)
-
     train_dataset, validation_dataset = build_dataset(dataset_cfg, defense=False)
-    train_dataloader = to_dataloader(train_dataset)
-    validation_dataloader = to_dataloader(validation_dataset)
+    train_dataloader, validation_dataloader = map(
+        to_dataloader, [train_dataset, validation_dataset]
+    )
 
+    # Prepare for run_epoch
     criterion = CrossEntropyLoss()
-
     optimizer, (scheduler, scheduler_type) = build_optimizer(optimizer_cfg, model.parameters())
-
-    attacker = Attacker(attack_cfg)
-    attack_epochs = get_attack_epochs(attack_cfg.freq, num_epochs)
-
     run_epoch = partial(
         run_general_epoch,
         model=model,
@@ -84,7 +49,10 @@ def train(
         scheduler_type=scheduler_type,
     )
 
-    for epoch in range(1, 1 + num_epochs):
+    attacker = Attacker(attack_cfg)
+    attack_epochs = get_attack_epochs(attack_cfg.freq, num_epochs)
+
+    for epoch in range(1, 1 + model.num_epochs):
         attack_num_iters = attacker.request_num_iters() if epoch in attack_epochs else None
         print(
             f"Epoch: {epoch:3d} / {num_epochs}"
@@ -107,15 +75,8 @@ def train(
                 name="attack validation",
             )
 
-            # adv_train_dataset.save_to_directory(
-            #     recorder.root_dir / "adv_images" / f"adv_train_{epoch}"
-            # )
-            # adv_validation_dataset.save_to_directory(
-            #     recorder.root_dir / "adv_images" / f"adv_validation_{epoch}"
-            # )
-
             joint_train_dataloader = to_dataloader(
-                JointDataset(None, adv_train_dataset), shuffle=True
+                JointDataset(train_dataset, adv_train_dataset), shuffle=True
             )
             joint_validation_dataloader = to_dataloader(
                 JointDataset(validation_dataset, adv_validation_dataset)
@@ -133,6 +94,7 @@ def train(
                 train=False,
                 name="eval adv_validation",
             )
+
             print_verbose("Adv. Train", attack_train_time, eval_adv_train_log, is_eval=True)
             print_verbose(
                 "Adv. Validation", attack_validation_time, eval_adv_validation_log, is_eval=True
@@ -174,4 +136,5 @@ def train(
         if epoch % checkpoint_period == 0:
             recorder.save_checkpoint(epoch, model, optimizer, scheduler, scheduler_type)
 
-    recorder.finish_training(model)
+    recorder.dump_logs()
+    model.dump_weights(recorder.root_dir / "model_weights.pt")

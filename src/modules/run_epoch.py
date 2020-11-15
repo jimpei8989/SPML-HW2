@@ -61,6 +61,6 @@ def run_general_epoch(
 
     return {
         "loss": np.mean(losses),
-        "benign_acc": np.mean(benign_accuracies),
+        "benign_acc": np.mean(benign_accuracies) if benign_accuracies else 0,
         "adv_acc": np.mean(adv_accuracies) if adv_accuracies else 0,
     }

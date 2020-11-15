@@ -25,4 +25,9 @@ $ pip3 install -r requirements.txt
 - [ ] Paper survey for at least three methods
 - [x] [Adversarial Training](https://arxiv.org/abs/1706.06083)
 - [ ] Preprocessing-based defenses
-    - SHIELD
+    - [ ] SHIELD
+
+## Experiments
+1. Trained on adversarial examples with fixed \#{iters}, tested on different \#{iters}
+2. Model selection: simpler model v.s. stronger model
+3.

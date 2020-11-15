@@ -9,9 +9,9 @@ import numpy as np
 import torch
 
 from modules.recorder import Recorder
-from modules.models import CIFAR10_Model
 
 from modules.train import train
+from modules.gen_adversarial import generate_adversarial_examples
 from modules.evaluate import evaluate
 
 SEED = 0x06902029
@@ -30,16 +30,12 @@ def sec_to_readable(seconds):
 def main():
     seed_everything(SEED)
 
-    cfg = get_config()
+    args, cfg = get_config()
 
-    model = CIFAR10_Model(
-        cfg.model, cfg.recorder_root, load_weight=(cfg.task == "evaluate")
-    ).cuda()
-
-    if cfg.task == "train":
+    if args.task == "train":
         recorder = Recorder(cfg.recorder_root, cfg)
         train_time, _ = train(
-            model,
+            model_cfg=cfg.model,
             dataset_cfg=cfg.dataset,
             attack_cfg=cfg.attack,
             optimizer_cfg=cfg.optimizer,
@@ -48,11 +44,23 @@ def main():
         )
         print(f"\nAdversarial training finished. Time elapsed: {sec_to_readable(train_time)}.")
 
-    elif cfg.task == "evaluate":
+    elif args.task == "evaluate":
+        if args.gen_adv:
+            adv_gen_time, _ = generate_adversarial_examples(
+                model_cfg=cfg.eval.model,
+                attack_cfg=cfg.attack,
+                dataset_cfg=cfg.dataset,
+                adv_images_dir=cfg.eval.adv_images_dir,
+                **cfg.misc,
+            )
+            print(
+                f"\nAdversarial examples generation finished. Time elapsed: {sec_to_readable(adv_gen_time)}."
+            )
+
         evaluation_time, _ = evaluate(
-            model,
+            model_cfg=cfg.model,
             dataset_cfg=cfg.dataset,
-            attack_cfg=cfg.attack,
+            adv_images_dir=cfg.eval.adv_images_dir,
             output_dir=cfg.output_root,
             **cfg.misc,
         )
@@ -63,7 +71,7 @@ def get_config():
     args = parse_arguments()
 
     OmegaConf.register_resolver("path", lambda p: Path(p).absolute())
-    return OmegaConf.merge(
+    return args, OmegaConf.merge(
         OmegaConf.create(
             {
                 "recorder_root": f"${{path:logs/{args.name}}}",
@@ -73,20 +81,19 @@ def get_config():
         OmegaConf.load(args.base_config),
         OmegaConf.load(args.attack_config if args.task == "train" else args.evaluate_config),
         OmegaConf.load(args.config),
-        OmegaConf.create({"task": args.task}),
     )
 
 
 def parse_arguments():
     parser = ArgumentParser()
     parser.add_argument("task")
-    parser.add_argument("--config", type=lambda p: Path(p).absolute())
     parser.add_argument("--name", default=datetime.now().strftime(r"%m%d-%H%M"))
-    parser.add_argument("--base_config", type=lambda p: Path(p), default="configs/base.yaml")
-    parser.add_argument("--attack_config", type=lambda p: Path(p), default="configs/pgd-AT.yaml")
-    parser.add_argument(
-        "--evaluate_config", type=lambda p: Path(p), default="configs/evaluate.yaml"
-    )
+    parser.add_argument("--weight_path", type=Path)
+    parser.add_argument("--base_config", type=Path, default="configs/base.yaml")
+    parser.add_argument("--attack_config", type=Path, default="configs/pgd-fixed.yaml")
+    parser.add_argument("--evaluate_config", type=Path, default="configs/evaluate.yaml")
+    parser.add_argument("--config", type=Path)
+    parser.add_argument("--gen_adv", action="store_true")
     return parser.parse_args()
 
 

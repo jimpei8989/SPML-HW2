@@ -1,0 +1,6 @@
+dataset:
+  defense_transforms:
+    - name: JPEG
+      args:
+        quality: 60
+    - name: ToTensor

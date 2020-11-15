@@ -82,7 +82,7 @@ def get_config():
         ),
         OmegaConf.load(args.base_config),
         OmegaConf.load(args.attack_config if args.task == "train" else args.evaluate_config),
-        OmegaConf.load(args.config),
+        *(OmegaConf.load(c) for c in args.config),
     )
 
 
@@ -94,7 +94,7 @@ def parse_arguments():
     parser.add_argument("--base_config", type=Path, default="configs/base.yaml")
     parser.add_argument("--attack_config", type=Path, default="configs/pgd-fixed.yaml")
     parser.add_argument("--evaluate_config", type=Path, default="configs/evaluate.yaml")
-    parser.add_argument("--config", type=Path)
+    parser.add_argument("--config", nargs="*", type=Path)
     parser.add_argument("--gen_adv", action="store_true")
     return parser.parse_args()
 

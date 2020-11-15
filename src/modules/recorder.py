@@ -30,9 +30,9 @@ class Recorder:
     ):
         self.dump_logs()
         checkpoint = {
-            "model_state_dict": model.state_dict() if not model else None,
-            "optimizer_state_dict": optimizer.state_dict() if not model else None,
-            "scheduler_state_dict": lr_scheduler.state_dict() if not model else None,
+            "model_state_dict": model.state_dict() if model else None,
+            "optimizer_state_dict": optimizer.state_dict() if model else None,
+            "scheduler_state_dict": lr_scheduler.state_dict() if model else None,
             "scheduler_type": scheduler_type,
         }
 

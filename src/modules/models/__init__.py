@@ -13,7 +13,7 @@ class CIFAR10_Model(nn.Module):
 
     def __init__(self, cfg, weight_path=None):
         super().__init__()
-        self.num_epochs = cfg.num_epochs
+        self.num_epochs = cfg.get("num_epochs", 0)
 
         self.model_names = cfg.models if cfg.name == "Ensemble" else [cfg.name]
 

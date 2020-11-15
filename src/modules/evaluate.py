@@ -34,7 +34,7 @@ def evaluate(
             to_dataloader(dataset), name=f"{'W' if defense else 'WO'} def {split}"
         )
         print(
-            f"{'Eval' + split:28s} ({'w/ ' if defense else 'w/o'} defense) [{elapsed_time:.2f}s]"
+            f"{'Eval ' + split:20s} ({'w/ ' if defense else 'w/o'} defense) [{elapsed_time:5.2f}s]"
             + " - ".join(f"{k}: {log[k]:.4f}" for k in ["loss", "benign_acc", "adv_acc"])
         )
         output.append({"split": split, "defense": defense, "time": elapsed_time, "log": log})

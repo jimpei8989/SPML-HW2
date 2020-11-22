@@ -64,6 +64,8 @@ def main():
             dataset_cfg=cfg.dataset,
             adv_images_dir=cfg.eval.adv_images_dir,
             output_dir=cfg.output_root,
+            eval_val_only=args.eval_val_only,
+            eval_def_only=args.eval_def_only,
             **cfg.misc,
         )
         print(f"\nEvaluation finished. Time elapsed: {sec_to_readable(evaluation_time)}.")
@@ -92,10 +94,14 @@ def parse_arguments():
     parser.add_argument("--name", default=datetime.now().strftime(r"%m%d-%H%M"))
     parser.add_argument("--weight_path", type=Path)
     parser.add_argument("--base_config", type=Path, default="configs/base.yaml")
-    parser.add_argument("--attack_config", type=Path, default="configs/pgd-fixed.yaml")
-    parser.add_argument("--evaluate_config", type=Path, default="configs/evaluate.yaml")
+    parser.add_argument("--attack_config", type=Path, default="configs/attacks/pgd-fixed.yaml")
+    parser.add_argument(
+        "--evaluate_config", type=Path, default="configs/evaluatiions/evaluate.yaml"
+    )
     parser.add_argument("--config", nargs="*", type=Path)
     parser.add_argument("--gen_adv", action="store_true")
+    parser.add_argument("--eval_val_only", action="store_true")
+    parser.add_argument("--eval_def_only", action="store_true")
     return parser.parse_args()
 
 

@@ -1,0 +1,24 @@
+model:
+  name: resnet1001
+  num_epochs: 256
+optimizer:
+  name: SGD
+  lr: 0.0005
+  scheduler:
+    name: CyclicLR
+    type: batch
+    base_lr: 0.00001
+    max_lr: 0.0005
+attack:
+  freq:
+    type: expand
+    args:
+      - [16, 2]
+      - [8, 4]
+      - [6, 6]
+      - [4, 8]
+      - [2, 16]
+misc:
+  batch_size: 128
+  num_workers: 8
+  checkpoint_period: 8

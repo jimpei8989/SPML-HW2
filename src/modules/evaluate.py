@@ -19,6 +19,8 @@ def evaluate(
     output_dir=None,
     batch_size=1,
     num_workers=1,
+    eval_val_only=False,
+    eval_def_only=False,
     **kwargs,
 ):
     model = CIFAR10_Model(model_cfg, weight_path=weight_path).cuda()
@@ -34,17 +36,18 @@ def evaluate(
             to_dataloader(dataset), name=f"{'W' if defense else 'WO'} def {split}"
         )
         print(
-            f"{'Eval ' + split:20s} ({'w/ ' if defense else 'w/o'} defense) [{elapsed_time:5.2f}s]"
+            f"{'Eval ' + split:20s} ({'w/ ' if defense else 'w/o'} defense) [{elapsed_time:6.2f}s]"
             + " - ".join(f"{k}: {log[k]:.4f}" for k in ["loss", "benign_acc", "adv_acc"])
         )
         output.append({"split": split, "defense": defense, "time": elapsed_time, "log": log})
 
-    for defense in [False, True]:
+    for defense in [True] if eval_def_only else [False, True]:
         train_dataset, validation_dataset = build_dataset(dataset_cfg, defense=defense)
         adv_train_dataset, adv_validation_dataset = build_adv_dataset(
             adv_images_dir, dataset_cfg, defense=defense
         )
-        run_eval(JointDataset(train_dataset, adv_train_dataset), "train", defense)
+        if not eval_val_only:
+            run_eval(JointDataset(train_dataset, adv_train_dataset), "train", defense)
         run_eval(JointDataset(validation_dataset, adv_validation_dataset), "validation", defense)
 
     if not output_dir.exists():

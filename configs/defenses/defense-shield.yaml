@@ -1,0 +1,6 @@
+dataset:
+  defense_transforms:
+    - name: Shield
+      args:
+        block_size: 4
+    - name: ToTensor

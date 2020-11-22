@@ -96,7 +96,7 @@ def parse_arguments():
     parser.add_argument("--base_config", type=Path, default="configs/base.yaml")
     parser.add_argument("--attack_config", type=Path, default="configs/attacks/pgd-fixed.yaml")
     parser.add_argument(
-        "--evaluate_config", type=Path, default="configs/evaluatiions/evaluate.yaml"
+        "--evaluate_config", type=Path, default="configs/evaluatiions/evaluate-8.yaml"
     )
     parser.add_argument("--config", nargs="*", type=Path)
     parser.add_argument("--gen_adv", action="store_true")

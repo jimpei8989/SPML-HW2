@@ -3,8 +3,11 @@
 .python-version
 __pycache__/
 
-logs/
-results/
-temp/
 data
 adv_images/
+
+logs/
+results/
+outputs/
+temp/
+

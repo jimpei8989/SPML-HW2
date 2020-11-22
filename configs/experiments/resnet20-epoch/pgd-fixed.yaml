@@ -1,0 +1,5 @@
+attack:
+  method: pgd
+  iters:
+    type: fixed
+    args: 8

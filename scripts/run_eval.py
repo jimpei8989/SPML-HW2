@@ -1,16 +1,12 @@
 import json
 import subprocess as sp
+from argparse import ArgumentParser
 from pathlib import Path
 
 import matplotlib.pyplot as plt
-from matplotlib.pyplot import tight_layout
-
-OUTPUT_DIR = Path("outputs/exp-resnet20")
-if not OUTPUT_DIR.is_dir():
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 
-def run():
+def run(output_dir, config_path, log_dir):
     scores_by_attack_iters = {
         0: [],
         8: [],
@@ -19,18 +15,16 @@ def run():
         64: [],
         128: [],
     }
-    for epoch in range(0, 32 + 1):
+    for epoch in range(0, 256 + 1, 4):
         scores = []
 
         for attack_iters in [8, 16, 32, 64, 128]:
             command = " ".join(
                 [
                     "python3 src/main.py evaluate",
-                    "--config configs/experiments/resnet20-epoch/resnet20.yaml",
+                    f"--config {config_path}",
                     f"--evaluate_config configs/evaluations/evaluate-{attack_iters}.yaml",
-                    f"--weight_path logs/exp-resnet20-epoch/epoch_{epoch:03d}.pt"
-                    if epoch > 0
-                    else "",
+                    f"--weight_path {log_dir}/epoch_{epoch:03d}.pt" if epoch > 0 else "",
                     "--eval_val_only",
                     "--eval_def_only",
                     "--name tmp",
@@ -55,20 +49,21 @@ def run():
 
         print(f'{epoch} -> {" & ".join(map(lambda s: f"{s:.4f}", scores))}')
 
-    with open(OUTPUT_DIR / "log.json", "w") as f:
+    with open(output_dir / "log.json", "w") as f:
         json.dump(scores_by_attack_iters, f)
 
 
-def plot():
-    with open(OUTPUT_DIR / "log.json") as f:
+def plot(output_dir):
+    with open(output_dir / "log.json") as f:
         scores_by_attack_iters = json.load(f)
 
-    fig, ax = plt.subplots(figsize=(10, 6), tight_layout=True)
+    fig, ax = plt.subplots(figsize=(12, 6), tight_layout=True)
 
     colors = ["red", "orange", "yellow", "green", "blue", "purple"]
 
     for attack_iters, col in zip(scores_by_attack_iters, colors):
         ax.plot(
+            list(range(0, 256 + 1, 4)),
             scores_by_attack_iters[attack_iters],
             color=col,
             label=("benign" if int(attack_iters) == 0 else f"adv_{attack_iters}"),
@@ -76,11 +71,36 @@ def plot():
 
     ax.set_title("Accuracies v.s. Training Epochs")
     ax.set_xlabel("Training Epochs")
-    ax.set_xticks(list(range(len(scores_by_attack_iters["0"]))))
+    # ax.set_xticks(list(range(0, 256 + 1, 16)))
     ax.set_ylabel("Accuracy")
     ax.legend()
 
-    fig.savefig(OUTPUT_DIR / "output-eval.png")
+    fig.savefig(output_dir / "output-eval.png")
 
 
-plot()
+def parse_arguments():
+    parser = ArgumentParser()
+    parser.add_argument("output_dir", type=Path)
+    parser.add_argument("config_path", type=Path)
+    parser.add_argument("log_dir", type=Path)
+
+    parser.add_argument("--run", action="store_true")
+    parser.add_argument("--plot", action="store_true")
+
+    return parser.parse_args()
+
+
+def main():
+    args = parse_arguments()
+
+    if not args.output_dir.is_dir():
+        args.output_dir.mkdir(parents=True, exist_ok=True)
+
+    if args.run:
+        run(args.output_dir, args.config_path, args.log_dir)
+
+    if args.plot:
+        plot(args.output_dir)
+
+
+main()

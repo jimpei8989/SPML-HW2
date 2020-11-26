@@ -104,6 +104,7 @@ def train(
 
             recorder.on_attack_ends(
                 epoch=epoch,
+                target="attack_name",
                 attack_train_time=attack_train_time,
                 attack_validation_time=attack_validation_time,
                 attack_train_log=eval_adv_train_log,

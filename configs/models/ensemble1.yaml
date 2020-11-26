@@ -16,15 +16,14 @@ optimizer:
     base_lr: 0.00001
     max_lr: 0.0005
 attack:
+  method: pgd
   freq:
-    type: expand
-    args:
-      - [16, 2]
-      - [8, 4]
-      - [6, 6]
-      - [4, 8]
-      - [2, 16]
+    type: fixed
+    args: 4
+  iters:
+    type: fixed
+    args: 16
 misc:
-  batch_size: 32
+  batch_size: 128
   num_workers: 8
-  checkpoint_period: 8
+  checkpoint_period: 4

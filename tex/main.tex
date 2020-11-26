@@ -44,38 +44,41 @@
 
 \begin{abstract}
 Despite the mightiness of deep nerual networks, several studies have shown that they are vulnerable
-to adversarial examples,. In this homework, I built a
+to adversarial examples. In this homework, we tried to build a black-box defense on CIFAR-10.
+Finally, my adversarially trained ensemble model with a vanilla JPEG compression as a preprocessing
+could defend well against strong attacks.
+\footnote{Due to page limit, I will skip contents that can be found in the homework specs.}
 \end{abstract}
 
 \section{Introduction}
-In this homework, we're going to build a black-box defense on CIFAR-10 \cite{krizhevsky2009learning}
-dataset.
 
-\subsection{Threat Model}
-As suggested in class \cite{spml0925}, we should state the considered threat model precisely. The
-threat model I consider is listed as below:
+As suggested in class \cite{spml0925}, we should state the considered threat model
+precisely. The threat model I consider is listed as below:
 
 \begin{itemize}
   \item The adversary has limited knowledge of the model, he only knows the model architecture, but
   is totally ignorant of the training process and the model weights.
-  \item The adversary can perturb each pixel up to 8 (in 0-255 scale), which is given.
+  \item The adversary can perturb each pixel up to 8 (in 0-255 scale).
 \end{itemize}
 
 \section{Methods}
-\subsection{Baseline Method}
-
 \subsection{Adversarial Training}
-Adversarial training \cite{madry2019deep}
-
-\subsubsection{Adversarial Training}
-Adversarial training may take a long time, and it's mostly contributed by \textit{generating
-adversarial examples}.
+\subsubsection{Modified Adversarial Training}
+Adversarial training \cite{madry2019deep} may take a long time, and it's mostly from
+\textit{generating adversarial examples}. In this homework, to reduce computational cost and fasten
+the adversarial training, I modified a step the adversarial training. During adversarial training,
+for an input $x$, we used to generate adversarial examples $x'$ in that optimization step and train
+the model with $x'$. However, it would be wasting if the model hadn't learned from the adversarial
+examples. Thus, I store $x'$ and reuse them for several epochs.
 
 \subsubsection{Adversarial Training on Ensemble Models}
-Same as the previous subsection, adversarial training take a long time during the \textit{generating
-adversarial examples} phase even in a single model setting. If we want to train an emsemble model of
-several models, the time would grow significantly. For example, it only takes \textbf{TBD}. To
-overcome the computational cost, I redesign the adversarial training process as:
+\label{section:adv-training-on-ensemble-models}
+In addition to the natural property of adversarial attack, adversarial attacks on a ensemble model
+would take even more time since each model has to forward the input once. To overcome the
+computational cost, I redesign the adversarial training process. Whenever the adversarial examples
+need to be regenerated, instead of attacking directly on the ensemble model, we attack on a submodel
+in the ensemble model that is chosen at random. Although not tested thoroughly, the mechanism should
+work because of the transferbility of adversarial attacks between models.
 
 \subsection{Preprocessing-based Defenses}
 In my previous homework, I've already shown that some preprocessing-based defenses, such as vanilla
@@ -84,40 +87,32 @@ this homework, I'm going to explore defenses that are more effective.
 
 \subsubsection{Baseline}
 Inspired by the preprocessing method TA used in the evaluation of previous homework, I setup the
-baseline method as:
-
-\begin{itemize}
-  \item ColorJitter (brightness = 0.4, contrast = 0.4, saturation = 0.4, hue = 0.25)
-  \item CenterCrop (size = 24)
-  \item Pad (size = 4)
-\end{itemize}
+baseline method as: \textbf{ColorJitter} (brightness = 0.4, contrast = 0.4, saturation = 0.4, hue =
+0.25) $\to$ \textbf{CenterCrop} (size = 24) $\to$ \textbf{Pad} (size = 4)
 
 \subsubsection{Vanilla JPEG Compression}
 We apply JPEG Compression on the entire image before feeding it to our model in order to reduce the
 adversarial noise.
 
 \subsubsection{SHIELD}
-Similar to "Vanilla JPEG Compression", we divide the image into several equal sized subimages. For
-each subimage, we apply different JPEG quality at random on it. And finally, we concatenate the
-compressed subimages back.
+Similar to \textit{Vanilla JPEG Compression}, we divide the image into several equal sized
+subimages. For each subimage, we apply different JPEG quality at random on it. And finally, we
+concatenate the compressed subimages back.
 
 \subsection{Evalution}
 \label{section:evaluation}
-To evaluate my work fairly, I unify the method to evaluate each model.
-
-The adversarial examples are generated in the following way:
+To evaluate my work fairly, I unify the method to evaluate each model. Specifically, we create
+several adversarial datasets for evaluation in the following settings:
 \begin{itemize}
-  \item PGD attack, constrained to $l_2$ norm $\epsilon = 8 / 256$
-  \item The number of iterations are 8, 16, 32, 64 and 128.
   \item The proxy models are \texttt{nin}, \texttt{resnet20}, \texttt{sepreresnet56},
   \texttt{densenet40-k12-bc}, and \texttt{diaresnet110}.
+  \item PGD attack, constrained to $l_2$ norm $\epsilon = 8 / 256$
+  \item The number of iterations could be 8, 16, 32, 64 and 128.
 \end{itemize}
 
 \section{Experiments and Findings}
 
-\subsection{Adversarial Training}
-
-\subsubsection{Adversarial Training Epochs}
+\subsection{Adversarial Training Epochs}
 \paragraph{Experiment Settings} In this experiment, we want to examine if increasing adversarial
 training epochs improves the general adversarial accuracy. The model we used is \texttt{resnet20}
 since it's more lightweight. We regenerate new adversarial examples every epoch, and each
@@ -156,7 +151,7 @@ has better on both benign set and adversarial set. I guess that it may result fr
 size in CIFAR-10 is already small (32x32), and the smaller splitted images will not benefit from the
 JPEG compression.
 
-\begin{table}
+\begin{table}[ht]
   \label{experiment:pgd-iterations}
   \centering
   \caption{Evaluation of different preprocessing based defense. The plus sign (+) indicates the
@@ -176,17 +171,65 @@ JPEG compression.
 \end{table}
 
 
-\section{Final Decision}
-The final model I use is
+\section{Final Model}
+\paragraph{Model Architecture} Ensemble (by averaging the output) model of \texttt{nin},
+\texttt{resnet20}, \texttt{sepreresnet56}, \texttt{densenet40-k12-bc} and \texttt{diaresnet110}.
+The model architectures and initial weights are credited to \texttt{pytorchcv}\cite{imgcls}. The most important
+reason I adopt an ensemble model is that it's believed ensemble model could resolve the problem
+when only one model misfunctions. It's quite useful when we consider the robustness of a model.
+\paragraph{Adversarial Training} Adversarial training on ensemble models as described in
+section \ref{section:adv-training-on-ensemble-models}. The model is trained with 256 epochs, and
+adversarial examples are regenerated every 4 epochs, using PGD attacks with 16 iterations. The
+entire training process takes about 32 hours on a single RTX 2070 Super.
+\paragraph{Preprocessing-based Defense} Among many effective methods, I applied
+\textbf{Vanilla JPEG Compression} with quality = 60 since it's effective without harming the
+benign accuracy too much.
 
-\begin{itemize}
-  \item An ensemble model consisting of ....
-  \item Adversarial training for epochs, adversarial examples are regenerated for x iterations every
-  y epochs.
-  \item Equipped with a single preprocessing-based defense, JPEG-Compression with quality 60.
-\end{itemize}
+\subsection{Analysis and Findings}
 
-\section{Conclusion}
+\paragraph{Training Log} The training log is shown on figure \ref{img:final-training-log}. The
+sudden drops on adversarial accuracies are due to that new adversarial examples were effective and
+made the ensemble output the wrong answer. Also, we can observe that attacking on a single
+\texttt{sepreresnet56} was significantly more successful than others. It's possibly because that
+it's so similar to the ensemble model. I also tested the performance on different adversarial
+dataset.
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.8\linewidth]{imgs/final-training-log.png}
+  \caption{Training log of my ensemble model}
+  \label{img:final-training-log}
+\end{figure}
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.8\linewidth]{imgs/final-evaluation.png}
+  \caption{Evaluation on different epochs of my ensemble model}
+  \label{img:final-evalution}
+\end{figure}
+
+
+\paragraph{Evaluation} The evaluation results are shown on table \ref{table:eval-ensemble-model}. We
+can easily see that our model performs well on both benign dataset and adversarial datasets with
+accuracies greater than 80\%. Also, it's worth noting that the ensemble proxy model we attacked on
+is the same as the ensemble model we utilize here. This implies that even the adversary has access
+to our model, they cannot attack our model effectively. As for the defense, we cans see that
+applying it does not help the either benign accuracy nor adversarial accuracy; however, I'll
+consider it as a part of my model as a safety guard.
+
+\begin{table}[ht]
+  \label{table:eval-ensemble-model}
+  \centering
+  \caption{Evaluation of our ensemble model.}
+  \begin{tabular}{ccccccc}
+    \toprule
+    Defense                   & Benign  & Adv-8   & Adv-16  & Adv-32  & Adv-64  & Adv-128 \\
+    \midrule
+    None                      & 0.9026  & 0.8369  & 0.8437  & 0.8479  & 0.8498  & 0.8506  \\
+    Vanilla JPEG Compression  & 0.8688  & 0.8303  & 0.8363  & 0.8398  & 0.8399  & 0.8431  \\
+    \bottomrule
+  \end{tabular}
+\end{table}
 
 \bibliographystyle{ieeetr}
 \bibliography{citation}

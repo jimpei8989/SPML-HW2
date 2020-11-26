@@ -21,13 +21,6 @@ $ pip3 install -r requirements.txt
 - DL Framework: `PyTorch 1.5.0`
 - Packages: Please refer to [requirements-inference.txt](./requirements-inference.txt)
 
-## Progress
-- [ ] Paper survey for at least three methods
-- [x] [Adversarial Training](https://arxiv.org/abs/1706.06083)
-- [ ] Preprocessing-based defenses
-    - [ ] SHIELD
-
-## Experiments
-1. Trained on adversarial examples with fixed \#{iters}, tested on different \#{iters}
-2. Model selection: simpler model v.s. stronger model
-3.
+### Inference Time
+I've tested my `hw2.py` on my PC. The runtime was within 10 seconds, and the GPU memory consumption
+was about 1.5G.

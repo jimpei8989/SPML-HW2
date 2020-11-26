@@ -5,9 +5,10 @@ __pycache__/
 
 data
 adv_images/
+example_folder/
+predict.txt
 
 logs/
 results/
 outputs/
 temp/
-

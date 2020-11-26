@@ -55,7 +55,7 @@ class EnsembleModel(nn.Module):
             )
 
         if weight_path:
-            ckpt = torch.load(weight_path)
+            ckpt = torch.load(str(weight_path))  # pytorch 1.5.1 does not accept Path-like
             if "model_state_dict" in ckpt:
                 self.load_state_dict(ckpt["model_state_dict"])
             else:

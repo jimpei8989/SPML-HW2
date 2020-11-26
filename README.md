@@ -21,6 +21,16 @@ $ pip3 install -r requirements.txt
 - DL Framework: `PyTorch 1.5.0`
 - Packages: Please refer to [requirements-inference.txt](./requirements-inference.txt)
 
+#### Building Up the Environment
+```bash
+# Assume you already have pyenv :)
+$ pyenv install 3.8.5
+$ pyenv virtualenv 3.8.5 SPML-HW2-INF
+$ pyenv local SPML-HW2-INF
+$ pip3 install -r requirements-inference.txt
+```
+
+
 ### Inference Time
 I've tested my `hw2.py` on my PC. The runtime was within 10 seconds, and the GPU memory consumption
 was about 1.5G.

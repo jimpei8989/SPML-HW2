@@ -34,3 +34,10 @@ $ pip3 install -r requirements-inference.txt
 ### Inference Time
 I've tested my `hw2.py` on my PC. The runtime was within 10 seconds, and the GPU memory consumption
 was about 1.5G.
+
+### Test Results
+> Update on 12/16 (Wed.)
+
+- The test images and the corresponding answers are in [*test/](test/).
+- I got **97**% accuracy on the test set!
+- The `hw2_eval.py` is modified from `hw2.py` to evaluate the test set easier.

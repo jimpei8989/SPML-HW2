@@ -5,7 +5,7 @@
 ### Training Environment
 - Python version: `3.8.5`
 - DL Framework: `PyTorch 1.7.0`
-- Packages: Please refer to [requirements.txt](./requirements.txt)
+- Packages: Please refer to *[requirements.txt](./requirements.txt)*
 
 #### Building Up the Environment
 ```bash
@@ -19,7 +19,7 @@ $ pip3 install -r requirements.txt
 ### Inference Environment
 - Python version: `3.8.5`
 - DL Framework: `PyTorch 1.5.0`
-- Packages: Please refer to [requirements-inference.txt](./requirements-inference.txt)
+- Packages: Please refer to *[requirements-inference.txt](./requirements-inference.txt)*.
 
 #### Building Up the Environment
 ```bash
@@ -38,6 +38,6 @@ was about 1.5G.
 ### Test Results
 > Update on 12/16 (Wed.)
 
-- The test images and the corresponding answers are in [*test/](test/).
+- The test images and the corresponding answers are in *[test/](test/)*.
 - I got **97**% accuracy on the test set!
 - The `hw2_eval.py` is modified from `hw2.py` to evaluate the test set easier.

@@ -108,12 +108,14 @@ def build_dataset(dataset_dir, transform=None):
 def main():
     test_dir = Path(sys.argv[1] if len(sys.argv) >= 2 else Path("./example_folder"))
 
-    dataset = build_dataset(test_dir, transform=T.Compose([JpegCompression(), T.ToTensor()]))
-    # dataset = build_dataset(test_dir, transform=T.Compose([T.ToTensor()]))
+    dataset = build_dataset(
+        test_dir / "images", transform=T.Compose([JpegCompression(), T.ToTensor()])
+    )
+    # dataset = build_dataset(test_dir / "images", transform=T.Compose([T.ToTensor()]))
     dataloader = DataLoader(dataset)
 
-    # model = EnsembleModel(weight_path=MODEL_WEIGHT_PATH).cuda()
-    model = EnsembleModel().cuda()
+    model = EnsembleModel(weight_path=MODEL_WEIGHT_PATH).cuda()
+    # model = EnsembleModel().cuda()
     model.eval()
 
     @timer
@@ -126,7 +128,7 @@ def main():
 
         outputs = [CIFAR10_CLASSES[k] for k in outputs]
 
-        with open("test/ans.txt") as f:
+        with open(test_dir / "ans.txt") as f:
             ans = [line.strip() for line in f.readlines()]
             return [(i + 1, p, g) for i, (p, g) in enumerate(zip(outputs, ans)) if p != g]
 

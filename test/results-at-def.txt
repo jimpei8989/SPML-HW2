@@ -1,0 +1,168 @@
+------ nin ------
+[001] - dog        - cat       
+[003] - bird       - cat       
+[005] - frog       - dog       
+[006] - ship       - bird      
+[010] - frog       - deer      
+[012] - frog       - dog       
+[018] - truck      - horse     
+[019] - ship       - truck     
+[020] - frog       - cat       
+[021] - deer       - cat       
+[022] - frog       - dog       
+[025] - truck      - automobile
+[028] - ship       - automobile
+[031] - cat        - deer      
+[032] - ship       - automobile
+[033] - horse      - bird      
+[035] - ship       - automobile
+[037] - ship       - cat       
+[038] - cat        - truck     
+[039] - frog       - dog       
+[040] - ship       - airplane  
+[044] - frog       - bird      
+[045] - deer       - cat       
+[046] - ship       - airplane  
+[047] - ship       - truck     
+[050] - frog       - bird      
+[051] - deer       - horse     
+[054] - ship       - airplane  
+[055] - ship       - bird      
+[058] - ship       - bird      
+[059] - frog       - horse     
+[062] - cat        - deer      
+[068] - ship       - horse     
+[069] - deer       - horse     
+[072] - ship       - airplane  
+[075] - bird       - dog       
+[077] - deer       - horse     
+[080] - deer       - frog      
+[081] - ship       - airplane  
+[082] - frog       - deer      
+[083] - frog       - deer      
+[084] - airplane   - bird      
+[085] - truck      - automobile
+[091] - frog       - dog       
+[092] - truck      - automobile
+[093] - ship       - truck     
+[094] - cat        - dog       
+[095] - frog       - horse     
+[098] - horse      - airplane  
+[099] - truck      - automobile
+[100] - truck      - automobile
+Accu: 49%
+>>> 0.126 secs elapsed
+------ resnet20 ------
+[001] - dog        - cat       
+[003] - bird       - cat       
+[005] - cat        - dog       
+[006] - ship       - bird      
+[012] - cat        - dog       
+[021] - deer       - cat       
+[022] - cat        - dog       
+[033] - horse      - bird      
+[037] - bird       - cat       
+[045] - dog        - cat       
+[047] - ship       - truck     
+[052] - automobile - truck     
+[054] - ship       - airplane  
+[055] - deer       - bird      
+[059] - deer       - horse     
+[069] - frog       - horse     
+[073] - dog        - cat       
+[075] - bird       - dog       
+[080] - deer       - frog      
+[093] - airplane   - truck     
+[094] - cat        - dog       
+[100] - truck      - automobile
+Accu: 78%
+>>> 0.211 secs elapsed
+------ sepreresnet56 ------
+[021] - deer       - cat       
+[046] - bird       - airplane  
+[054] - ship       - airplane  
+[069] - deer       - horse     
+Accu: 96%
+>>> 0.907 secs elapsed
+------ densenet40_k12_bc ------
+[001] - deer       - cat       
+[003] - bird       - cat       
+[005] - cat        - dog       
+[011] - ship       - frog      
+[018] - deer       - horse     
+[021] - deer       - cat       
+[022] - cat        - dog       
+[032] - ship       - automobile
+[033] - horse      - bird      
+[037] - ship       - cat       
+[039] - deer       - dog       
+[040] - ship       - airplane  
+[044] - frog       - bird      
+[046] - truck      - airplane  
+[047] - ship       - truck     
+[051] - bird       - horse     
+[052] - automobile - truck     
+[054] - ship       - airplane  
+[055] - ship       - bird      
+[059] - deer       - horse     
+[067] - horse      - deer      
+[069] - deer       - horse     
+[075] - bird       - dog       
+[076] - deer       - frog      
+[079] - deer       - frog      
+[080] - deer       - frog      
+[083] - frog       - deer      
+[084] - airplane   - bird      
+[087] - horse      - deer      
+[088] - dog        - frog      
+[093] - ship       - truck     
+[094] - cat        - dog       
+[095] - deer       - horse     
+[098] - deer       - airplane  
+[100] - truck      - automobile
+Accu: 65%
+>>> 0.385 secs elapsed
+------ diaresnet110 ------
+[001] - deer       - cat       
+[002] - frog       - truck     
+[005] - cat        - dog       
+[012] - frog       - dog       
+[020] - frog       - cat       
+[021] - deer       - cat       
+[022] - cat        - dog       
+[024] - cat        - bird      
+[033] - horse      - bird      
+[037] - bird       - cat       
+[039] - frog       - dog       
+[040] - ship       - airplane  
+[044] - frog       - bird      
+[045] - frog       - cat       
+[046] - ship       - airplane  
+[047] - ship       - truck     
+[049] - ship       - airplane  
+[050] - dog        - bird      
+[051] - cat        - horse     
+[052] - automobile - truck     
+[053] - frog       - cat       
+[055] - ship       - bird      
+[059] - deer       - horse     
+[060] - ship       - truck     
+[062] - cat        - deer      
+[067] - horse      - deer      
+[069] - frog       - horse     
+[072] - ship       - airplane  
+[075] - frog       - dog       
+[078] - frog       - horse     
+[082] - frog       - deer      
+[083] - frog       - deer      
+[084] - airplane   - bird      
+[087] - horse      - deer      
+[100] - frog       - automobile
+Accu: 65%
+>>> 2.723 secs elapsed
+------ ENSEMBLE ------
+[021] - deer       - cat       
+[054] - ship       - airplane  
+[069] - deer       - horse     
+Accu: 97%
+>>> 4.252 secs elapsed

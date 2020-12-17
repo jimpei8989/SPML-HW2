@@ -10,6 +10,8 @@ from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms as T
 from pytorchcv.model_provider import get_model
 
+from src.modules.utils import timer
+
 MODEL_WEIGHT_PATH = Path("model_weight/ensemble_weights.pt")
 CIFAR10_CLASSES = [
     "airplane",
@@ -107,26 +109,41 @@ def main():
     test_dir = Path(sys.argv[1] if len(sys.argv) >= 2 else Path("./example_folder"))
 
     dataset = build_dataset(test_dir, transform=T.Compose([JpegCompression(), T.ToTensor()]))
+    # dataset = build_dataset(test_dir, transform=T.Compose([T.ToTensor()]))
     dataloader = DataLoader(dataset)
 
-    model = EnsembleModel(weight_path=MODEL_WEIGHT_PATH).cuda()
+    # model = EnsembleModel(weight_path=MODEL_WEIGHT_PATH).cuda()
+    model = EnsembleModel().cuda()
     model.eval()
 
-    outputs = []
-    with torch.no_grad():
-        for x in dataloader:
-            y = model(x.cuda()).argmax(dim=1).cpu()
-            outputs.extend(y.tolist())
+    @timer
+    def evaluate(model, name):
+        outputs = []
+        with torch.no_grad():
+            for x in dataloader:
+                y = model(x.cuda()).argmax(dim=1).cpu()
+                outputs.extend(y.tolist())
 
-    outputs = [CIFAR10_CLASSES[k] for k in outputs]
+        outputs = [CIFAR10_CLASSES[k] for k in outputs]
 
-    with open("test/ans.txt") as f:
-        ans = [line.strip() for line in f.readlines()]
-        misclassification = [(i + 1, p, g) for i, (p, g) in enumerate(zip(outputs, ans)) if p != g]
+        with open("test/ans.txt") as f:
+            ans = [line.strip() for line in f.readlines()]
+            return [(i + 1, p, g) for i, (p, g) in enumerate(zip(outputs, ans)) if p != g]
+
+    for name in model.model_names:
+        print(f"------ {name} ------")
+        t, misclassification = evaluate(getattr(model, name), name)
         print(
             "\n".join(map(lambda p: f"[{p[0]:03d}] - {p[1]:10s} - {p[2]:10s}", misclassification))
         )
         print(f"Accu: {100 - len(misclassification)}%")
+        print(f">>> {t:.3f} secs elapsed")
+
+    print("------ ENSEMBLE ------")
+    t, misclassification = evaluate(model, "ensemble")
+    print("\n".join(map(lambda p: f"[{p[0]:03d}] - {p[1]:10s} - {p[2]:10s}", misclassification)))
+    print(f"Accu: {100 - len(misclassification)}%")
+    print(f">>> {t:.3f} secs elapsed")
 
 
 if __name__ == "__main__":

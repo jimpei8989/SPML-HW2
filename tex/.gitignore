@@ -1,4 +1,7 @@
-*
+main.*
+*.tex
 !main.tex
 !main.pdf
 !citation.bib
+
+!imgs/*
